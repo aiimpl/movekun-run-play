@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>MOVE-kun RUN</title>
+<meta name="description" content="MOVE-kun が音楽に合わせて走る3Dランナー。拍に合わせて跳ぶ・くぐる・回る。">
+<meta property="og:title" content="MOVE-kun RUN">
+<meta property="og:description" content="音に合わせて、走れ。ブラウザで遊べる3Dビート・ランナー。">
+<meta property="og:image" content="og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#0b0b12">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230b0b12'/%3E%3Cpath d='M9 9l14 14M23 9L9 23' stroke='%23ff1088' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E">
+<style>
+:root { --pink: #ff1088; --cyan: #00b4ff; --ink: #0b0b12; --paper: #f6f4fa; }
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { margin: 0; height: 100%; overflow: hidden; background: var(--ink); color: #fff;
+  font-family: "Helvetica Neue", "Hiragino Sans", "Noto Sans JP", system-ui, sans-serif; user-select: none; -webkit-user-select: none; touch-action: none; }
+canvas#c { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+.hud { position: fixed; inset: 0; pointer-events: none; padding: max(14px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(14px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left)); }
+.hide { display: none !important; }
+/* 上の段 */
+#top { display: flex; justify-content: space-between; align-items: flex-start; }
+#lives { display: flex; gap: 6px; }
+#lives i { width: 22px; height: 22px; position: relative; display: block; }
+#lives i::before, #lives i::after { content: ""; position: absolute; left: 1px; right: 1px; top: 9px; height: 5px; border-radius: 3px; background: var(--pink); box-shadow: 0 0 8px var(--pink); }
+#lives i::before { transform: rotate(45deg); } #lives i::after { transform: rotate(-45deg); }
+#lives i.off::before, #lives i.off::after { background: rgba(255,255,255,.22); box-shadow: none; }
+#combo { margin-top: 8px; font: 700 13px/1 "Helvetica Neue", sans-serif; letter-spacing: .12em; color: var(--cyan); text-shadow: 0 0 10px rgba(0,180,255,.6); min-height: 14px; }
+#combo b { font-size: 22px; color: #fff; margin-right: 4px; }
+#stage { text-align: center; font: 600 11px/1.4 "Helvetica Neue", sans-serif; letter-spacing: .35em; opacity: .85; text-shadow: 0 1px 6px rgba(0,0,0,.5); }
+#stage b { display: block; font-size: 18px; letter-spacing: .2em; }
+#right { text-align: right; }
+#score { font: 300 34px/1 "Helvetica Neue", sans-serif; letter-spacing: .06em; font-variant-numeric: tabular-nums; text-shadow: 0 1px 10px rgba(0,0,0,.45); }
+#dist { font: 600 11px/1.6 "Helvetica Neue", sans-serif; letter-spacing: .3em; opacity: .8; }
+#mute, #pause { pointer-events: auto; background: rgba(0,0,0,.28); border: 1px solid rgba(255,255,255,.35); color: #fff; width: 34px; height: 34px; border-radius: 50%; font-size: 14px; margin-left: 6px; margin-top: 8px; cursor: pointer; }
+/* 真ん中の文字 */
+#pop { position: fixed; left: 0; right: 0; top: 30%; text-align: center; font: 800 30px/1 "Helvetica Neue", sans-serif; letter-spacing: .28em; opacity: 0; text-shadow: 0 0 18px currentColor; }
+#pop.go { animation: pop .7s ease-out; }
+@keyframes pop { 0% { opacity: 0; transform: scale(1.5); } 15% { opacity: 1; transform: scale(1); } 70% { opacity: 1; } 100% { opacity: 0; transform: translateY(-14px); } }
+#banner { position: fixed; left: 0; right: 0; top: 40%; text-align: center; opacity: 0; }
+#banner.go { animation: banner 2.2s ease-out; }
+#banner b { display: block; font: 200 clamp(34px, 9vw, 74px)/1 "Helvetica Neue", sans-serif; letter-spacing: .4em; text-indent: .4em; }
+#banner span { display: block; margin-top: 10px; font: 600 12px/1 "Helvetica Neue", sans-serif; letter-spacing: .5em; color: var(--pink); }
+@keyframes banner { 0% { opacity: 0; letter-spacing: 1em; } 12% { opacity: 1; letter-spacing: .4em; } 80% { opacity: 1; } 100% { opacity: 0; } }
+/* 拍の目印 */
+#beatbar { position: fixed; left: 50%; bottom: max(22px, env(safe-area-inset-bottom)); transform: translateX(-50%); width: 280px; height: 40px; }
+/* スマホの操作 */
+#stick { position: fixed; left: 0; bottom: 0; width: 50%; height: 60%; pointer-events: auto; }
+#knob { position: fixed; width: 112px; height: 112px; border-radius: 50%; border: 1.5px solid rgba(255,255,255,.45); background: rgba(255,255,255,.06); transform: translate(-50%,-50%); pointer-events: none; }
+#knob::after { content: ""; position: absolute; left: 50%; top: 50%; width: 46px; height: 46px; margin: -23px; border-radius: 50%; background: rgba(255,255,255,.35); transform: translate(var(--dx,0), 0); }
+#btns { position: fixed; right: max(18px, env(safe-area-inset-right)); bottom: max(24px, env(safe-area-inset-bottom)); width: 190px; height: 190px; pointer-events: none; }
+.b { position: absolute; pointer-events: auto; border-radius: 50%; display: flex; align-items: center; justify-content: center; font: 700 12px/1 "Helvetica Neue", sans-serif; letter-spacing: .14em; color: #fff; background: rgba(0,0,0,.18); backdrop-filter: blur(2px); }
+.b.on { transform: scale(.92); filter: brightness(1.6); }
+#bJump { width: 92px; height: 92px; right: 0; bottom: 34px; border: 2px solid var(--pink); box-shadow: 0 0 14px rgba(255,16,136,.45) inset; }
+#bSlide { width: 64px; height: 64px; right: 100px; bottom: 0; border: 2px solid var(--cyan); box-shadow: 0 0 12px rgba(0,180,255,.4) inset; }
+#bTrick { width: 64px; height: 64px; right: 76px; bottom: 112px; border: 2px solid #fff; }
+#keys { position: fixed; right: 18px; bottom: 18px; font: 500 11px/1.8 "Helvetica Neue", sans-serif; letter-spacing: .1em; opacity: .7; text-align: right; }
+#keys kbd { font: inherit; border: 1px solid rgba(255,255,255,.5); border-radius: 4px; padding: 0 5px; margin-left: 4px; }
+/* 画面いっぱいの板（タイトル・結果・一時停止） */
+.panel { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: auto; text-align: center; padding: 24px 16px; }
+#title { background: linear-gradient(90deg, rgba(11,11,18,.5), rgba(11,11,18,0) 55%); align-items: flex-start; text-align: left; padding-left: max(7vw, 24px); }
+#title .go-btn { margin-left: 0; }
+@media (max-aspect-ratio: 11/10) { #title { background: linear-gradient(180deg, rgba(11,11,18,.45), rgba(11,11,18,0) 40%, rgba(11,11,18,0) 70%, rgba(11,11,18,.5)); justify-content: space-between; align-items: center; text-align: center; padding: max(48px, 8vh) 16px max(40px, 6vh); } }
+#logo { font: 900 clamp(40px, min(12vw, 17vh), 104px)/.9 "Helvetica Neue", "Arial Black", sans-serif; letter-spacing: -.02em; color: #fff; text-shadow: 0 4px 0 var(--pink), 0 8px 0 var(--cyan), 0 10px 30px rgba(0,0,0,.35); }
+#logo small { display: block; text-indent: 0 !important; font: 700 clamp(12px, 2.6vw, 16px)/1 "Helvetica Neue", sans-serif; letter-spacing: .5em; text-indent: .5em; margin-top: 22px; text-shadow: 0 1px 8px rgba(0,0,0,.5); }
+.go-btn { margin-top: 26px; pointer-events: auto; font: 800 15px/1 "Helvetica Neue", sans-serif; letter-spacing: .35em; text-indent: .35em; padding: 17px 46px; border-radius: 999px; border: 0; color: #fff; background: var(--pink); box-shadow: 0 0 0 3px rgba(255,255,255,.9), 0 0 26px rgba(255,16,136,.7); cursor: pointer; }
+.go-btn.sub { background: transparent; box-shadow: 0 0 0 1.5px rgba(255,255,255,.7); margin-top: 12px; padding: 13px 30px; font-size: 12px; }
+.how { margin-top: 18px; font: 500 12px/1.9 "Hiragino Sans", "Noto Sans JP", sans-serif; opacity: .85; text-shadow: 0 1px 6px rgba(0,0,0,.6); }
+#load { position: fixed; left: 50%; bottom: 48px; width: 200px; height: 3px; margin-left: -100px; background: rgba(255,255,255,.2); }
+#load i { display: block; height: 100%; width: 0; background: var(--pink); box-shadow: 0 0 8px var(--pink); }
+#result { background: linear-gradient(90deg, rgba(8,8,14,.72), rgba(8,8,14,.35) 50%, rgba(8,8,14,0) 70%); align-items: flex-start; padding-left: max(7vw, 24px); }
+#result h2 { text-indent: 0 !important; }
+@media (max-aspect-ratio: 11/10) { #result { background: rgba(8,8,14,.6); align-items: center; padding-left: 16px; } }
+#result h2 { margin: 0; font: 200 clamp(30px, 7vw, 54px)/1 "Helvetica Neue", sans-serif; letter-spacing: .4em; text-indent: .4em; }
+#rs { margin-top: 22px; display: grid; grid-template-columns: auto auto; gap: 8px 26px; font: 600 13px/1.5 "Helvetica Neue", sans-serif; letter-spacing: .14em; text-align: left; }
+#rs span:nth-child(odd) { opacity: .7; } #rs span:nth-child(even) { text-align: right; font-variant-numeric: tabular-nums; }
+#rs .big { font-size: 28px; font-weight: 300; }
+#best { margin-top: 12px; font: 700 11px/1 "Helvetica Neue", sans-serif; letter-spacing: .3em; color: var(--cyan); min-height: 11px; }
+#paused { background: rgba(8,8,14,.55); }
+@media (max-aspect-ratio: 11/10) { #score { font-size: 24px; } #stage { font-size: 9px; } #stage b { font-size: 14px; } }
+@media (hover: hover) and (pointer: fine) { #stick, #knob, #btns { display: none !important; } }
+@media (hover: none), (pointer: coarse) { #keys { display: none !important; } #beatbar { bottom: auto; top: max(84px, calc(env(safe-area-inset-top) + 70px)); } }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div class="hud" id="hud">
+  <div id="top" class="hide">
+    <div><div id="lives"><i></i><i></i><i></i></div><div id="combo"></div></div>
+    <div id="stage"></div>
+    <div id="right"><div id="score">000000</div><div id="dist">0 m</div>
+      <button id="pause" aria-label="一時停止">II</button><button id="mute" aria-label="音を切る">♪</button></div>
+  </div>
+  <div id="pop"></div>
+  <div id="banner"><b></b><span></span></div>
+  <canvas id="beatbar" class="hide" width="560" height="80"></canvas>
+  <div id="stick" class="hide"></div><div id="knob" class="hide"></div>
+  <div id="btns" class="hide"><div class="b" id="bJump">JUMP</div><div class="b" id="bSlide">SLIDE</div><div class="b" id="bTrick">TRICK</div></div>
+  <div id="keys" class="hide">← → 移動<kbd>A</kbd><kbd>D</kbd><br>ジャンプ<kbd>Space</kbd> スライド<kbd>↓</kbd> トリック<kbd>Shift</kbd></div>
+</div>
+<div class="panel" id="title">
+  <div id="logo">MOVE-kun<br>RUN<small>音に合わせて、走れ。</small></div>
+  <div><button class="go-btn hide" id="start">START</button>
+  <div class="how hide" id="how">拍に合わせて跳ぶ・くぐる・回ると <b style="color:#ff5fae">ON BEAT</b>。<br>続けるほどコンボが伸びて、曲も速くなる。音を出して遊んでね。</div></div>
+  <div id="load"><i></i></div>
+</div>
+<div class="panel hide" id="result">
+  <h2>FINISH</h2>
+  <div id="rs"></div>
+  <div id="best"></div>
+  <button class="go-btn" id="retry">RETRY</button>
+  <button class="go-btn sub" id="share">X でシェア</button>
+</div>
+<div class="panel hide" id="paused"><h2 style="font:200 40px/1 'Helvetica Neue';letter-spacing:.4em">PAUSE</h2><button class="go-btn" id="resume">RESUME</button></div>
+<script type="module" src="./app.js"></script>
+</body>
+</html>
