@@ -1,12 +1,12 @@
 <!doctype html>
-<html lang="ja">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>MOVE-kun RUN</title>
-<meta name="description" content="MOVE-kun が音楽に合わせて走る3Dランナー。拍に合わせて跳ぶ・くぐる・回る。">
+<meta name="description" content="A 3D rhythm runner in your browser. Jump, slide and spin to the beat with MOVE-kun.">
 <meta property="og:title" content="MOVE-kun RUN">
-<meta property="og:description" content="音に合わせて、走れ。ブラウザで遊べる3Dビート・ランナー。">
+<meta property="og:description" content="Run to the beat. A 3D rhythm runner you can play in your browser. / 音に合わせて、走れ。ブラウザで遊べる3Dリズムランナー。">
 <meta property="og:image" content="og.png">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#0b0b12">
@@ -19,7 +19,7 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: var(--ink); 
 canvas#c { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
 .hud { position: fixed; inset: 0; pointer-events: none; padding: max(14px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(14px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left)); }
 .hide { display: none !important; }
-/* 上の段 */
+/* Top row */
 #top { display: flex; justify-content: space-between; align-items: flex-start; }
 #lives { display: flex; gap: 6px; }
 #lives i { width: 22px; height: 22px; position: relative; display: block; }
@@ -34,7 +34,7 @@ canvas#c { position: fixed; inset: 0; width: 100%; height: 100%; display: block;
 #score { font: 300 34px/1 "Helvetica Neue", sans-serif; letter-spacing: .06em; font-variant-numeric: tabular-nums; text-shadow: 0 1px 10px rgba(0,0,0,.45); }
 #dist { font: 600 11px/1.6 "Helvetica Neue", sans-serif; letter-spacing: .3em; opacity: .8; }
 #mute, #pause { pointer-events: auto; background: rgba(0,0,0,.28); border: 1px solid rgba(255,255,255,.35); color: #fff; width: 34px; height: 34px; border-radius: 50%; font-size: 14px; margin-left: 6px; margin-top: 8px; cursor: pointer; }
-/* 真ん中の文字 */
+/* Center pop-ups */
 #pop { position: fixed; left: 0; right: 0; top: 30%; text-align: center; font: 800 30px/1 "Helvetica Neue", sans-serif; letter-spacing: .28em; opacity: 0; text-shadow: 0 0 18px currentColor; }
 #pop.go { animation: pop .7s ease-out; }
 @keyframes pop { 0% { opacity: 0; transform: scale(1.5); } 15% { opacity: 1; transform: scale(1); } 70% { opacity: 1; } 100% { opacity: 0; transform: translateY(-14px); } }
@@ -43,9 +43,9 @@ canvas#c { position: fixed; inset: 0; width: 100%; height: 100%; display: block;
 #banner b { display: block; font: 200 clamp(34px, 9vw, 74px)/1 "Helvetica Neue", sans-serif; letter-spacing: .4em; text-indent: .4em; }
 #banner span { display: block; margin-top: 10px; font: 600 12px/1 "Helvetica Neue", sans-serif; letter-spacing: .5em; color: var(--pink); }
 @keyframes banner { 0% { opacity: 0; letter-spacing: 1em; } 12% { opacity: 1; letter-spacing: .4em; } 80% { opacity: 1; } 100% { opacity: 0; } }
-/* 拍の目印 */
+/* Beat marker */
 #beatbar { position: fixed; left: 50%; bottom: max(22px, env(safe-area-inset-bottom)); transform: translateX(-50%); width: 280px; height: 40px; }
-/* スマホの操作 */
+/* Touch controls */
 #stick { position: fixed; left: 0; bottom: 0; width: 50%; height: 60%; pointer-events: auto; }
 #knob { position: fixed; width: 112px; height: 112px; border-radius: 50%; border: 1.5px solid rgba(255,255,255,.45); background: rgba(255,255,255,.06); transform: translate(-50%,-50%); pointer-events: none; }
 #knob::after { content: ""; position: absolute; left: 50%; top: 50%; width: 46px; height: 46px; margin: -23px; border-radius: 50%; background: rgba(255,255,255,.35); transform: translate(var(--dx,0), 0); }
@@ -57,7 +57,7 @@ canvas#c { position: fixed; inset: 0; width: 100%; height: 100%; display: block;
 #bTrick { width: 64px; height: 64px; right: 76px; bottom: 112px; border: 2px solid #fff; }
 #keys { position: fixed; right: 18px; bottom: 18px; font: 500 11px/1.8 "Helvetica Neue", sans-serif; letter-spacing: .1em; opacity: .7; text-align: right; }
 #keys kbd { font: inherit; border: 1px solid rgba(255,255,255,.5); border-radius: 4px; padding: 0 5px; margin-left: 4px; }
-/* 画面いっぱいの板（タイトル・結果・一時停止） */
+/* Full-screen panels (title, result, pause) */
 .panel { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: auto; text-align: center; padding: 24px 16px; }
 #title { background: linear-gradient(90deg, rgba(11,11,18,.5), rgba(11,11,18,0) 55%); align-items: flex-start; text-align: left; padding-left: max(7vw, 24px); }
 #title .go-btn { margin-left: 0; }
@@ -78,6 +78,11 @@ canvas#c { position: fixed; inset: 0; width: 100%; height: 100%; display: block;
 #rs .big { font-size: 28px; font-weight: 300; }
 #best { margin-top: 12px; font: 700 11px/1 "Helvetica Neue", sans-serif; letter-spacing: .3em; color: var(--cyan); min-height: 11px; }
 #paused { background: rgba(8,8,14,.55); }
+#lang { position: fixed; z-index: 5; top: max(14px, env(safe-area-inset-top)); right: max(16px, env(safe-area-inset-right)); pointer-events: auto; cursor: pointer;
+  font: 700 12px/1 "Helvetica Neue", "Hiragino Sans", sans-serif; letter-spacing: .08em; color: #fff; padding: 9px 14px; border-radius: 999px; border: 1px solid rgba(255,255,255,.55); background: rgba(0,0,0,.3); }
+.how b.pk { color: #ff5fae; }
+html[lang=en] #logo small { letter-spacing: .22em; }
+html[lang=ja] #rs { letter-spacing: .06em; }
 @media (max-aspect-ratio: 11/10) { #score { font-size: 24px; } #stage { font-size: 9px; } #stage b { font-size: 14px; } }
 @media (hover: hover) and (pointer: fine) { #stick, #knob, #btns { display: none !important; } }
 @media (hover: none), (pointer: coarse) { #keys { display: none !important; } #beatbar { bottom: auto; top: max(84px, calc(env(safe-area-inset-top) + 70px)); } }
@@ -90,19 +95,19 @@ canvas#c { position: fixed; inset: 0; width: 100%; height: 100%; display: block;
     <div><div id="lives"><i></i><i></i><i></i></div><div id="combo"></div></div>
     <div id="stage"></div>
     <div id="right"><div id="score">000000</div><div id="dist">0 m</div>
-      <button id="pause" aria-label="一時停止">II</button><button id="mute" aria-label="音を切る">♪</button></div>
+      <button id="pause" data-t-aria="pause">II</button><button id="mute" data-t-aria="mute">♪</button></div>
   </div>
   <div id="pop"></div>
   <div id="banner"><b></b><span></span></div>
   <canvas id="beatbar" class="hide" width="560" height="80"></canvas>
   <div id="stick" class="hide"></div><div id="knob" class="hide"></div>
   <div id="btns" class="hide"><div class="b" id="bJump">JUMP</div><div class="b" id="bSlide">SLIDE</div><div class="b" id="bTrick">TRICK</div></div>
-  <div id="keys" class="hide">← → 移動<kbd>A</kbd><kbd>D</kbd><br>ジャンプ<kbd>Space</kbd> スライド<kbd>↓</kbd> トリック<kbd>Shift</kbd></div>
+  <div id="keys" class="hide" data-t="keys"></div>
 </div>
 <div class="panel" id="title">
-  <div id="logo">MOVE-kun<br>RUN<small>音に合わせて、走れ。</small></div>
+  <div id="logo">MOVE-kun<br>RUN<small data-t="tagline"></small></div>
   <div><button class="go-btn hide" id="start">START</button>
-  <div class="how hide" id="how">拍に合わせて跳ぶ・くぐる・回ると <b style="color:#ff5fae">ON BEAT</b>。<br>続けるほどコンボが伸びて、曲も速くなる。音を出して遊んでね。</div></div>
+  <div class="how hide" id="how" data-t="how"></div></div>
   <div id="load"><i></i></div>
 </div>
 <div class="panel hide" id="result">
@@ -110,9 +115,10 @@ canvas#c { position: fixed; inset: 0; width: 100%; height: 100%; display: block;
   <div id="rs"></div>
   <div id="best"></div>
   <button class="go-btn" id="retry">RETRY</button>
-  <button class="go-btn sub" id="share">X でシェア</button>
+  <button class="go-btn sub" id="share" data-t="share"></button>
 </div>
 <div class="panel hide" id="paused"><h2 style="font:200 40px/1 'Helvetica Neue';letter-spacing:.4em">PAUSE</h2><button class="go-btn" id="resume">RESUME</button></div>
+<button id="lang" data-t="lang"></button>
 <script type="module" src="./app.js"></script>
 </body>
 </html>

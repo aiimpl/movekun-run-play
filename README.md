@@ -1,14 +1,14 @@
 # MOVE-kun RUN
 
-音に合わせて、走れ。MOVE-kun が音楽に合わせて駆け抜ける、ブラウザの3Dランナーです。
+Run to the beat. A 3D rhythm runner in your browser, starring MOVE-kun. Japanese and English.
 
-▶ 遊ぶ：https://aiimpl.github.io/movekun-run-play/
+▶ Play: https://aiimpl.github.io/movekun-run-play/
 
-- 左右に動いて障害物をよける。ジャンプ・スライド・トリックを拍に合わせると ON BEAT
-- 続けるほどコンボが伸び、曲も速くなる（128 → 150 → 174 BPM）
-- PC：← → / A D で移動、Space ジャンプ、↓ スライド、Shift トリック
-- スマホ：左半分で左右、右のボタンでジャンプ・スライド・トリック
+- Steer left and right to dodge. Jump, slide and trick on the beat for ON BEAT.
+- Keep it going to build combos — the music speeds up (128 → 150 → 174 BPM).
+- PC: ← → / A D to move, Space to jump, ↓ to slide, Shift for a trick.
+- Phone: drag on the left half to steer, buttons on the right to jump, slide and trick.
 
-このリポジトリは遊べる版（書き出した物）だけを置いています。
-MOVE-kun のキャラクター・3Dモデル・テクスチャの無断の利用・再配布はできません。
-three.js（MIT）を使っています。
+This repository contains only the built game.
+The MOVE-kun character, 3D model and textures may not be used or redistributed without permission.
+Built with three.js (MIT).
